@@ -9,10 +9,10 @@ import (
 )
 
 type Config struct {
-	Env        string `yaml:"env" env-required:"true"`
-	JWT        `yaml:"jwt"`
-	Storage    `yaml:"storage"`
-	HTTPServer `yaml:"http"`
+	Env     string     `yaml:"env" env-required:"true"`
+	JWT     JWT        `yaml:"jwt"`
+	Storage Storage    `yaml:"storage"`
+	HTTP    HTTPServer `yaml:"http"`
 }
 
 type HTTPServer struct {
