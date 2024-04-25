@@ -1,12 +1,11 @@
 package main
 
 import (
+	"auth/internal/app"
 	"auth/internal/config"
-	"auth/pkg/logger"
 )
 
 func main() {
 	config := config.MustLoad()
-	log := logger.SetupLogger(config.Env)
-	log.Info("Success startup")
+	app.Run(config)
 }
