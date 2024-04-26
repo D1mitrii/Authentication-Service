@@ -1,0 +1,10 @@
+services:
+  auth-app:
+    container_name: auth-app
+    build:
+      context: .
+      target: release
+    env_file:
+      - .env
+    ports:
+      - "8080:80"
