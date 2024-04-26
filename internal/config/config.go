@@ -9,41 +9,42 @@ import (
 )
 
 type Config struct {
-	Env     string     `yaml:"env" env-required:"true"`
-	JWT     JWT        `yaml:"jwt"`
-	Storage Storage    `yaml:"storage"`
-	HTTP    HTTPServer `yaml:"http"`
+	Env  string     `yaml:"env" env:"ENV" env-required:"true"`
+	JWT  JWT        `yaml:"jwt"`
+	PG   Postgres   `yaml:"storage"`
+	HTTP HTTPServer `yaml:"http"`
 }
 
 type HTTPServer struct {
-	Port    int           `yaml:"port"`
-	Timeout time.Duration `yaml:"timeout"`
+	Port    int           `yaml:"port" env:"HTTP_PORT"`
+	Timeout time.Duration `yaml:"timeout" env:"HTTP_TIMEOUT"`
 }
 
-type Storage struct {
-	URL  string `yaml:"url" env-required:"true"`
-	Name string `yaml:"name" env-required:"true"`
+type Postgres struct {
+	URL string `yaml:"url" env:"POSTGRES_URL" env-required:"true"`
 }
 
 type JWT struct {
-	SecretKey   string        `yaml:"secret_key" env-required:"true"`
-	TokenTTL    time.Duration `yaml:"token_ttl" env-required:"true"`
-	RefreshTime time.Duration `yaml:"refresh_time" env-required:"true"`
+	Secret      string        `yaml:"secret_key" env:"JWT_SECRET" env-required:"true"`
+	TokenTTL    time.Duration `yaml:"token_ttl" env:"JWT_TOKEN_TTL" env-required:"true"`
+	RefreshTime time.Duration `yaml:"refresh_time" env:"JWT_REFRESH" env-required:"true"`
 }
 
 func MustLoad() *Config {
-	path := fetchConfigPath()
-	if path == "" {
-		panic("config path is empty")
-	}
-
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		panic("config file doesn't exist: " + path)
-	}
-
 	var cfg Config
-	if err := cleanenv.ReadConfig(path, &cfg); err != nil {
-		panic("failed to read config file: " + err.Error())
+	path := fetchConfigPath()
+	if path != "" {
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			panic("config file doesn't exist: " + path)
+		}
+		if err := cleanenv.ReadConfig(path, &cfg); err != nil {
+			panic("failed to read config file: " + err.Error())
+		}
+		return &cfg
+	}
+
+	if err := cleanenv.ReadEnv(&cfg); err != nil {
+		panic("failed to read configuration from env")
 	}
 
 	return &cfg
