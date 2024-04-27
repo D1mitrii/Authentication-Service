@@ -6,5 +6,27 @@ services:
       target: release
     env_file:
       - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "8080:80"
+
+  postgres:
+    container_name: database
+    hostname: $$POSTGRES_HOST
+    image: postgres:16.2
+    env_file:
+      - .env
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - auth-data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+volumes:
+  auth-data:

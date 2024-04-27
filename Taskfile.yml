@@ -1,0 +1,19 @@
+# https://taskfile.dev
+
+version: '3'
+
+dotenv: [".env"]
+
+vars:
+  MIGRATION_URL: "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$POSTGRES_PORT/$POSTGRES_DB"
+
+tasks:
+  migrate-up:
+    cmds:
+      - goose --dir=./migrations/ postgres {{.MIGRATION_URL}} up
+    silent: true
+
+  migrate-down:
+    cmds:
+      - goose --dir=./migrations/ postgres {{.MIGRATION_URL}} down
+    silent: true
