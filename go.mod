@@ -8,7 +8,10 @@ require (
 	github.com/jackc/pgx/v5 v5.5.5
 )
 
-require github.com/pkg/errors v0.9.1 // indirect
+require (
+	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+)
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
