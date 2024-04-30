@@ -5,6 +5,7 @@ import (
 	v1 "auth/internal/controller/http/v1"
 	"auth/internal/repository"
 	"auth/internal/repository/pgdb"
+	"auth/internal/repository/rdb"
 	"auth/internal/services"
 	"auth/internal/services/jwt"
 	"auth/pkg/hasher"
@@ -19,19 +20,32 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-redis/redis"
 )
 
 func Run(cfg *config.Config) {
 	const op = "app - Run"
 	log := logger.SetupLogger(cfg.Env)
 
-	log.Info("")
+	log.Info("Connecting to postgres")
 	pg, err := postgres.New(cfg.PG.URL)
 	if err != nil {
 		log.Error(fmt.Sprintf("%s - postgres.New: %v", op, err))
 		return
 	}
 	defer pg.Close()
+
+	log.Info("Connecting to redis")
+	log.Info("redis password: " + cfg.RDB.Password)
+	client := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", cfg.RDB.Host, cfg.RDB.Port),
+		Password: cfg.RDB.Password,
+	})
+	if err := client.Ping().Err(); err != nil {
+		log.Error(fmt.Sprintf("%s - redis.NewClient: %v", op, err))
+		return
+	}
+	defer client.Close()
 
 	service := services.New(
 		jwt.New(
@@ -42,6 +56,7 @@ func Run(cfg *config.Config) {
 		hasher.New(cfg.Hasher.Salt),
 		repository.New(
 			pgdb.NewUserRepo(pg),
+			rdb.NewRefreshRepo(client, cfg.JWT.RefreshTime),
 		),
 	)
 

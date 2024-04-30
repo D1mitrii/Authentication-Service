@@ -12,6 +12,7 @@ type Config struct {
 	Env    string     `yaml:"env" env:"ENV" env-required:"true"`
 	JWT    JWT        `yaml:"jwt"`
 	PG     Postgres   `yaml:"storage"`
+	RDB    Redis      `yaml:"redis"`
 	HTTP   HTTPServer `yaml:"http"`
 	Hasher Hasher     `yaml:"hasher"`
 }
@@ -23,6 +24,12 @@ type HTTPServer struct {
 
 type Postgres struct {
 	URL string `yaml:"url" env:"POSTGRES_URL" env-required:"true"`
+}
+
+type Redis struct {
+	Host     string `yaml:"host" env:"REDIS_HOST" env-required:"true"`
+	Port     int    `yaml:"port" env:"REDIS_PORT" env-required:"true"`
+	Password string `yaml:"password" env:"REDIS_PASSWORD"`
 }
 
 type JWT struct {

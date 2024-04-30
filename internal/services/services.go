@@ -35,7 +35,7 @@ func New(jwt JWT, hasher Hasher, repo *repository.Repositories) *Services {
 
 func (s *Services) Register(ctx context.Context, user models.User) (int, error) {
 	// TODO: Add user info validation
-	// TODO: Save user with hashed password
+
 	hash, err := s.hasher.Hash(user.Password)
 	if err != nil {
 		return 0, ErrHashing
@@ -52,24 +52,44 @@ func (s *Services) Login(ctx context.Context, user models.User) (models.JWTPair,
 		}
 		return models.JWTPair{}, err
 	}
-	// TODO: Hash req user password
+
 	if !s.hasher.Compare(user.Password, userFromDB.Password) {
 		return models.JWTPair{}, ErrIncorrectPassword
 	}
 
-	access, errAccess := s.JWT.NewAccessToken(userFromDB)
+	return s.generateJWT(ctx, userFromDB)
+}
+
+func (s *Services) Logout(ctx context.Context, refreshToken string) error {
+	_, err := s.repo.RefreshSession.GetSession(ctx, refreshToken)
+	if err != nil {
+		return err
+	}
+	s.repo.RefreshSession.DeleteSession(ctx, refreshToken)
+	return nil
+}
+
+func (s *Services) generateJWT(ctx context.Context, user models.User) (models.JWTPair, error) {
+	access, errAccess := s.JWT.NewAccessToken(user)
 	refresh, errRefresh := s.JWT.NewRefreshToken()
 	if errAccess != nil || errRefresh != nil {
 		return models.JWTPair{}, ErrCannotSignToken
 	}
-	// TODO: Save refresh token to Redis: key - refresh, val - user id
+	if err := s.repo.RefreshSession.CreateSession(ctx, refresh, user.Id); err != nil {
+		return models.JWTPair{}, err
+	}
 	return models.JWTPair{Access: access, Refresh: refresh}, nil
 }
 
-func (s *Services) Logout(ctx context.Context, refreshToken string) error {
-	return nil
-}
-
 func (s *Services) RefreshSession(ctx context.Context, refreshToken string) (models.JWTPair, error) {
-	return models.JWTPair{}, nil
+	userId, err := s.repo.RefreshSession.GetSession(ctx, refreshToken)
+	if err != nil {
+		return models.JWTPair{}, nil
+	}
+	s.repo.RefreshSession.DeleteSession(ctx, refreshToken)
+	user, err := s.repo.User.GetUserById(ctx, userId)
+	if err != nil {
+		return models.JWTPair{}, nil
+	}
+	return s.generateJWT(ctx, user)
 }
