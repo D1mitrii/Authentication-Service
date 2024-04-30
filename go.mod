@@ -4,13 +4,9 @@ go 1.22.0
 
 require (
 	github.com/go-chi/chi/v5 v5.0.12
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jackc/pgx/v5 v5.5.5
-)
-
-require (
-	github.com/golang-jwt/jwt/v5 v5.2.1 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 )
 
 require (
@@ -20,7 +16,6 @@ require (
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/pressly/goose v2.7.0+incompatible
 	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
