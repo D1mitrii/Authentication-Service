@@ -8,4 +8,6 @@ var (
 	ErrIncorrectPassword = errors.New("incorrect user password")
 
 	ErrCannotSignToken = errors.New("cannot sign token")
+
+	ErrHashing = errors.New("failed to create a password hash")
 )

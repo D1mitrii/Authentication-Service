@@ -7,6 +7,7 @@ import (
 	"auth/internal/repository/pgdb"
 	"auth/internal/services"
 	"auth/internal/services/jwt"
+	"auth/pkg/hasher"
 	"auth/pkg/httpserver"
 	"auth/pkg/logger"
 	"auth/pkg/postgres"
@@ -38,6 +39,7 @@ func Run(cfg *config.Config) {
 			cfg.JWT.TokenTTL,
 			cfg.JWT.RefreshTime,
 		),
+		hasher.New(cfg.Hasher.Salt),
 		repository.New(
 			pgdb.NewUserRepo(pg),
 		),
