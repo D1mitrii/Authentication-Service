@@ -14,26 +14,38 @@ type JWT interface {
 	Parse(string) (int, error)
 }
 
-type Services struct {
-	JWT  JWT
-	Repo *repository.Repositories
+type Hasher interface {
+	Hash(string) (string, error)
+	Compare(string, string) bool
 }
 
-func New(jwt JWT, repo *repository.Repositories) *Services {
+type Services struct {
+	JWT    JWT
+	hasher Hasher
+	repo   *repository.Repositories
+}
+
+func New(jwt JWT, hasher Hasher, repo *repository.Repositories) *Services {
 	return &Services{
-		JWT:  jwt,
-		Repo: repo,
+		JWT:    jwt,
+		hasher: hasher,
+		repo:   repo,
 	}
 }
 
 func (s *Services) Register(ctx context.Context, user models.User) (int, error) {
 	// TODO: Add user info validation
 	// TODO: Save user with hashed password
-	return s.Repo.User.CreateUser(ctx, user)
+	hash, err := s.hasher.Hash(user.Password)
+	if err != nil {
+		return 0, ErrHashing
+	}
+	user.Password = hash
+	return s.repo.User.CreateUser(ctx, user)
 }
 
 func (s *Services) Login(ctx context.Context, user models.User) (models.JWTPair, error) {
-	userFromDB, err := s.Repo.User.GetUserByEmail(ctx, user.Email)
+	userFromDB, err := s.repo.User.GetUserByEmail(ctx, user.Email)
 	if err != nil {
 		if errors.Is(err, repoerrors.ErrNotFound) {
 			return models.JWTPair{}, ErrUserNotFound
@@ -41,7 +53,7 @@ func (s *Services) Login(ctx context.Context, user models.User) (models.JWTPair,
 		return models.JWTPair{}, err
 	}
 	// TODO: Hash req user password
-	if userFromDB.Password != user.Password {
+	if !s.hasher.Compare(user.Password, userFromDB.Password) {
 		return models.JWTPair{}, ErrIncorrectPassword
 	}
 

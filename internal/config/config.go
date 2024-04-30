@@ -9,10 +9,11 @@ import (
 )
 
 type Config struct {
-	Env  string     `yaml:"env" env:"ENV" env-required:"true"`
-	JWT  JWT        `yaml:"jwt"`
-	PG   Postgres   `yaml:"storage"`
-	HTTP HTTPServer `yaml:"http"`
+	Env    string     `yaml:"env" env:"ENV" env-required:"true"`
+	JWT    JWT        `yaml:"jwt"`
+	PG     Postgres   `yaml:"storage"`
+	HTTP   HTTPServer `yaml:"http"`
+	Hasher Hasher     `yaml:"hasher"`
 }
 
 type HTTPServer struct {
@@ -28,6 +29,10 @@ type JWT struct {
 	Secret      string        `yaml:"secret_key" env:"JWT_SECRET" env-required:"true"`
 	TokenTTL    time.Duration `yaml:"token_ttl" env:"JWT_TOKEN_TTL" env-required:"true"`
 	RefreshTime time.Duration `yaml:"refresh_time" env:"JWT_REFRESH" env-required:"true"`
+}
+
+type Hasher struct {
+	Salt int `yaml:"salt" env:"HASH_SALT" env-default:"10"`
 }
 
 func MustLoad() *Config {
