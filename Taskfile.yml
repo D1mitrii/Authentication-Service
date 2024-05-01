@@ -17,3 +17,7 @@ tasks:
     cmds:
       - goose --dir=./migrations/ postgres {{.MIGRATION_URL}} down
     silent: true
+
+  generate:
+    cmds:
+      - protoc -I=api/ api/auth/*.proto --go_out=pkg/ --go-grpc_out=pkg/
