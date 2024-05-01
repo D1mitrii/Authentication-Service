@@ -61,6 +61,7 @@ func (h *Handler) logIn(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     middlewares.RefreshCookie,
 		Value:    jwt.Refresh,
+		Path:     "/",
 		HttpOnly: true,
 	})
 
@@ -71,12 +72,38 @@ func (h *Handler) logIn(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) logOut(w http.ResponseWriter, r *http.Request) {
 	refreshToken := r.Context().Value(middlewares.CtxRefreshToken{}).(string)
-	h.service.Logout(r.Context(), refreshToken)
+	if h.service.Logout(r.Context(), refreshToken) != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     middlewares.RefreshCookie,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+	})
 }
 
 func (h *Handler) refresh(w http.ResponseWriter, r *http.Request) {
 	refreshToken := r.Context().Value(middlewares.CtxRefreshToken{}).(string)
-	h.service.RefreshSession(r.Context(), refreshToken)
+	jwt, err := h.service.RefreshSession(r.Context(), refreshToken)
+	if err != nil {
+		http.Error(w, "internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     middlewares.RefreshCookie,
+		Value:    jwt.Refresh,
+		Path:     "/",
+		HttpOnly: true,
+	})
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(jwt)
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Handler) secret(w http.ResponseWriter, r *http.Request) {

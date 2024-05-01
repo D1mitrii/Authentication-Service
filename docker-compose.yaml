@@ -9,13 +9,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "8080:80"
 
   postgres:
+    image: postgres:16.2
     container_name: database
     hostname: $$POSTGRES_HOST
-    image: postgres:16.2
     env_file:
       - .env
     healthcheck:
@@ -28,5 +30,21 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
 
+  redis:
+    image: redis:7.2.4-alpine
+    container_name: sessions
+    hostname: $$REDIS_HOST
+    env_file:
+      - .env
+    command: redis-server --requirepass "$REDIS_PASSWORD"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - sessions-data:/data
+
 volumes:
   auth-data:
+  sessions-data:
