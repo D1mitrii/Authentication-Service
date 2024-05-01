@@ -14,12 +14,17 @@ type Config struct {
 	PG     Postgres   `yaml:"storage"`
 	RDB    Redis      `yaml:"redis"`
 	HTTP   HTTPServer `yaml:"http"`
+	GRPC   GRPC       `yaml:"grpc"`
 	Hasher Hasher     `yaml:"hasher"`
 }
 
 type HTTPServer struct {
 	Port    int           `yaml:"port" env:"HTTP_PORT"`
 	Timeout time.Duration `yaml:"timeout" env:"HTTP_TIMEOUT"`
+}
+
+type GRPC struct {
+	Port int `yaml:"port" env:"GRPC_PORT" env-required:"true"`
 }
 
 type Postgres struct {

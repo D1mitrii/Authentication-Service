@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package auth_v1;
+
+option go_package="auth/v1;auth_v1";
+
+service AuthV1 {
+  // Register user in application
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  // Login user in application
+  rpc Login(LoginRequest) returns (Token);
+  // Get new tokens (access + refresh) based on the refresh token
+  rpc Refresh(RefreshRequest) returns (Token);
+  // Log out - ends user active session
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
+
+message RegisterRequest{
+  // Email of the user
+  string email = 1;
+  // Password of the user
+  string password = 2;
+}
+
+message RegisterResponse {
+  // User ID in system
+  int64 user_id = 1;
+}
+
+message LoginRequest {
+  // Email of the user
+  string email = 1;
+  // Password of the user
+  string password = 2;
+}
+
+message Token {
+  // Token for access of system resource
+  string access_token = 1;
+  // Token to get new pair of tokens or logout
+  string refresh_token = 2;
+}
+
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+}
