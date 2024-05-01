@@ -53,6 +53,7 @@ func Run(cfg *config.Config) {
 
 	log.Info("Initializing services")
 	service := services.New(
+		log,
 		jwt.New(
 			cfg.JWT.Secret,
 			cfg.JWT.TokenTTL,
@@ -104,7 +105,7 @@ func Run(cfg *config.Config) {
 	go func() {
 		defer wg.Done()
 		if err := httpServer.Shutdown(); err != nil {
-			log.Error("Application shutdown:", err)
+			log.Error("Application HTTP shutdown: ", err)
 		}
 	}()
 

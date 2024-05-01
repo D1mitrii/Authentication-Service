@@ -3,6 +3,7 @@ package rdb
 import (
 	"auth/internal/repository/repoerrors"
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -25,11 +26,12 @@ func (r *RefreshSession) CreateSession(ctx context.Context, refreshToken string,
 }
 
 func (r *RefreshSession) GetSession(ctx context.Context, refreshToken string) (int, error) {
+	const op = "RefreshSession.GetSession"
 	id, err := r.client.Get(refreshToken).Int()
 	if err == redis.Nil {
 		return 0, repoerrors.ErrNotFound
 	} else if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("%s - client.Get: %v", op, err)
 	}
 	return id, nil
 }
