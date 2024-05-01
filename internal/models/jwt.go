@@ -1,6 +1,6 @@
 package models
 
-type JWTPair struct {
+type Token struct {
 	Access  string `json:"accessToken"`
 	Refresh string `json:"refreshToken"`
 }

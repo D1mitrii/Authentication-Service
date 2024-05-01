@@ -44,17 +44,17 @@ func (s *Services) Register(ctx context.Context, user models.User) (int, error) 
 	return s.repo.User.CreateUser(ctx, user)
 }
 
-func (s *Services) Login(ctx context.Context, user models.User) (models.JWTPair, error) {
+func (s *Services) Login(ctx context.Context, user models.User) (models.Token, error) {
 	userFromDB, err := s.repo.User.GetUserByEmail(ctx, user.Email)
 	if err != nil {
 		if errors.Is(err, repoerrors.ErrNotFound) {
-			return models.JWTPair{}, ErrUserNotFound
+			return models.Token{}, ErrUserNotFound
 		}
-		return models.JWTPair{}, err
+		return models.Token{}, err
 	}
 
 	if !s.hasher.Compare(user.Password, userFromDB.Password) {
-		return models.JWTPair{}, ErrIncorrectPassword
+		return models.Token{}, ErrIncorrectPassword
 	}
 
 	return s.generateJWT(ctx, userFromDB)
@@ -65,31 +65,30 @@ func (s *Services) Logout(ctx context.Context, refreshToken string) error {
 	if err != nil {
 		return err
 	}
-	s.repo.RefreshSession.DeleteSession(ctx, refreshToken)
+	go s.repo.RefreshSession.DeleteSession(ctx, refreshToken)
 	return nil
 }
 
-func (s *Services) generateJWT(ctx context.Context, user models.User) (models.JWTPair, error) {
+func (s *Services) generateJWT(ctx context.Context, user models.User) (models.Token, error) {
 	access, errAccess := s.JWT.NewAccessToken(user)
 	refresh, errRefresh := s.JWT.NewRefreshToken()
 	if errAccess != nil || errRefresh != nil {
-		return models.JWTPair{}, ErrCannotSignToken
+		return models.Token{}, ErrCannotSignToken
 	}
-	if err := s.repo.RefreshSession.CreateSession(ctx, refresh, user.Id); err != nil {
-		return models.JWTPair{}, err
-	}
-	return models.JWTPair{Access: access, Refresh: refresh}, nil
+	go s.repo.RefreshSession.CreateSession(ctx, refresh, user.Id)
+	return models.Token{Access: access, Refresh: refresh}, nil
 }
 
-func (s *Services) RefreshSession(ctx context.Context, refreshToken string) (models.JWTPair, error) {
+func (s *Services) RefreshSession(ctx context.Context, refreshToken string) (models.Token, error) {
 	userId, err := s.repo.RefreshSession.GetSession(ctx, refreshToken)
 	if err != nil {
-		return models.JWTPair{}, nil
+		return models.Token{}, nil
 	}
-	s.repo.RefreshSession.DeleteSession(ctx, refreshToken)
+	go s.repo.RefreshSession.DeleteSession(ctx, refreshToken)
+
 	user, err := s.repo.User.GetUserById(ctx, userId)
 	if err != nil {
-		return models.JWTPair{}, nil
+		return models.Token{}, nil
 	}
 	return s.generateJWT(ctx, user)
 }
