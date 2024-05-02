@@ -1,14 +1,20 @@
 package grpc
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"net"
+
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 
 	grpcv1 "auth/internal/controller/grpc/v1"
 	desc "auth/pkg/auth/v1"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type App struct {
@@ -19,7 +25,25 @@ type App struct {
 }
 
 func New(log *slog.Logger, port int, authService *grpcv1.Auth) *App {
-	s := grpc.NewServer()
+	logOpts := []logging.Option{
+		logging.WithLogOnEvents(
+			logging.PayloadReceived,
+			logging.PayloadSent,
+		),
+	}
+	recoveryOpts := []recovery.Option{
+		recovery.WithRecoveryHandler(func(p any) (err error) {
+			log.Error("gRPC server recovered from panic", slog.Any("panic", p))
+			return status.Error(codes.Internal, "internal server error")
+		}),
+	}
+
+	s := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			recovery.UnaryServerInterceptor(recoveryOpts...),
+			logging.UnaryServerInterceptor(InterceptorLogger(log), logOpts...),
+		),
+	)
 	desc.RegisterAuthV1Server(s, authService)
 	app := &App{
 		log:        log,
@@ -29,6 +53,14 @@ func New(log *slog.Logger, port int, authService *grpcv1.Auth) *App {
 	}
 	go app.Run()
 	return app
+}
+
+// InterceptorLogger adapts slog logger to interceptor logger.
+// This code is simple enough to be copied and not imported.
+func InterceptorLogger(l *slog.Logger) logging.Logger {
+	return logging.LoggerFunc(func(ctx context.Context, lvl logging.Level, msg string, fields ...any) {
+		l.Log(ctx, slog.Level(lvl), msg, fields...)
+	})
 }
 
 func (a *App) Run() {
