@@ -15,7 +15,7 @@ type UserRepo interface {
 type RefreshSessionRepo interface {
 	CreateSession(context.Context, string, int) error
 	GetSession(context.Context, string) (int, error)
-	DeleteSession(context.Context, string) error
+	DeleteSession(context.Context, string) (int, error)
 }
 
 type Repositories struct {

@@ -91,12 +91,10 @@ func (s *Services) Logout(ctx context.Context, refreshToken string) error {
 		slog.String("operation", op),
 		slog.With("refresh-token", refreshToken),
 	)
-	_, err := s.repo.RefreshSession.GetSession(ctx, refreshToken)
-	if err != nil {
-		log.Error("failed to get refresh session", slog.String("error", err.Error()))
+	if _, err := s.repo.RefreshSession.DeleteSession(ctx, refreshToken); err != nil {
+		log.Error("failed to get-delete refresh session", slog.String("error", err.Error()))
 		return err
 	}
-	go s.repo.RefreshSession.DeleteSession(ctx, refreshToken)
 	log.Info("success logout")
 	return nil
 }
@@ -114,7 +112,9 @@ func (s *Services) generateJWT(ctx context.Context, user models.User) (models.To
 		return models.Token{}, ErrCannotSignToken
 	}
 
-	go s.repo.RefreshSession.CreateSession(ctx, refresh, user.Id)
+	if err := s.repo.RefreshSession.CreateSession(ctx, refresh, user.Id); err != nil {
+		return models.Token{}, ErrSessionCreateFail
+	}
 	return models.Token{Access: access, Refresh: refresh}, nil
 }
 
@@ -124,16 +124,15 @@ func (s *Services) RefreshSession(ctx context.Context, refreshToken string) (mod
 		slog.String("operation", op),
 		slog.String("refresh-token", refreshToken),
 	)
-	userId, err := s.repo.RefreshSession.GetSession(ctx, refreshToken)
+	userId, err := s.repo.RefreshSession.DeleteSession(ctx, refreshToken)
 	if err != nil {
 		if errors.Is(err, repoerrors.ErrNotFound) {
 			log.Warn(err.Error())
 			return models.Token{}, ErrSessionNotFound
 		}
-		log.Error("failed to get refresh session", slog.String("error", err.Error()))
+		log.Error("failed to get-delete refresh session", slog.String("error", err.Error()))
 		return models.Token{}, err
 	}
-	go s.repo.RefreshSession.DeleteSession(ctx, refreshToken)
 
 	user, err := s.repo.User.GetUserById(ctx, userId)
 	if err != nil {
@@ -141,7 +140,7 @@ func (s *Services) RefreshSession(ctx context.Context, refreshToken string) (mod
 			log.Warn(err.Error())
 			return models.Token{}, ErrUserNotFound
 		}
-		log.Warn("failedto get user", slog.String("error", err.Error()))
+		log.Warn("failed to get user", slog.String("error", err.Error()))
 		return models.Token{}, nil
 	}
 	return s.generateJWT(ctx, user)

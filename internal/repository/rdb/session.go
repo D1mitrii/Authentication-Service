@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 type RefreshSession struct {
@@ -22,12 +22,12 @@ func NewRefreshRepo(client *redis.Client, refresh_ttl time.Duration) *RefreshSes
 }
 
 func (r *RefreshSession) CreateSession(ctx context.Context, refreshToken string, id int) error {
-	return r.client.Set(refreshToken, id, r.refresh_ttl).Err()
+	return r.client.Set(ctx, refreshToken, id, r.refresh_ttl).Err()
 }
 
 func (r *RefreshSession) GetSession(ctx context.Context, refreshToken string) (int, error) {
 	const op = "RefreshSession.GetSession"
-	id, err := r.client.Get(refreshToken).Int()
+	id, err := r.client.Get(ctx, refreshToken).Int()
 	if err == redis.Nil {
 		return 0, repoerrors.ErrNotFound
 	} else if err != nil {
@@ -36,9 +36,13 @@ func (r *RefreshSession) GetSession(ctx context.Context, refreshToken string) (i
 	return id, nil
 }
 
-func (r *RefreshSession) DeleteSession(ctx context.Context, refreshToken string) error {
-	if r.client.Del(refreshToken).Val() == 0 {
-		return repoerrors.ErrNotFound
+func (r *RefreshSession) DeleteSession(ctx context.Context, refreshToken string) (int, error) {
+	const op = "RefreshSession.DeleteSession"
+	id, err := r.client.GetDel(ctx, refreshToken).Int()
+	if err == redis.Nil {
+		return 0, repoerrors.ErrNotFound
+	} else if err != nil {
+		return 0, fmt.Errorf("%s - client.Get: %v", op, err)
 	}
-	return nil
+	return id, nil
 }

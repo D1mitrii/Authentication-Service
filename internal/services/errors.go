@@ -7,7 +7,8 @@ var (
 	ErrUserNotFound      = errors.New("user not found")
 	ErrIncorrectPassword = errors.New("incorrect user password")
 
-	ErrSessionNotFound = errors.New("refresh session not found")
+	ErrSessionCreateFail = errors.New("failed to create refresh session")
+	ErrSessionNotFound   = errors.New("refresh session not found")
 
 	ErrCannotSignToken = errors.New("cannot sign token")
 

@@ -13,6 +13,7 @@ import (
 	"auth/pkg/httpserver"
 	"auth/pkg/logger"
 	"auth/pkg/postgres"
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -24,7 +25,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-redis/redis"
+	"github.com/redis/go-redis/v9"
 )
 
 func Run(cfg *config.Config) {
@@ -45,7 +46,7 @@ func Run(cfg *config.Config) {
 		Addr:     fmt.Sprintf("%s:%d", cfg.RDB.Host, cfg.RDB.Port),
 		Password: cfg.RDB.Password,
 	})
-	if err := client.Ping().Err(); err != nil {
+	if err := client.Ping(context.Background()).Err(); err != nil {
 		log.Error(fmt.Sprintf("%s - redis.NewClient: %v", op, err))
 		return
 	}
