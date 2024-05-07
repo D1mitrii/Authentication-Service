@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"auth/internal/models"
+	"crypto/rand"
 	"fmt"
 	"time"
 
@@ -48,10 +49,16 @@ func (r *JWT) NewAccessToken(user models.User) (string, error) {
 }
 
 func (r *JWT) NewRefreshToken() (string, error) {
+	// Getting random bytes
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", nil
+	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(r.refresh_ttl)),
 	})
-	tokenStr, err := token.SignedString(r.secret_key)
+	tokenStr, err := token.SignedString(b)
 	if err != nil {
 		return "", err
 	}
