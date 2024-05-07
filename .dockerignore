@@ -4,3 +4,11 @@
 README.md
 LICENSE
 Dockerfile
+docker-compose.yaml
+.env
+.env.example
+
+# Dirs
+api/
+migrations/
+metrics/

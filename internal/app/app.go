@@ -3,7 +3,9 @@ package app
 import (
 	"auth/internal/config"
 	grpcv1 "auth/internal/controller/grpc/v1"
+	"auth/internal/controller/http/middlewares"
 	httpv1 "auth/internal/controller/http/v1"
+	"auth/internal/metrics"
 	"auth/internal/repository"
 	"auth/internal/repository/pgdb"
 	"auth/internal/repository/rdb"
@@ -16,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"sync"
@@ -25,6 +28,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -67,6 +72,17 @@ func Run(cfg *config.Config) {
 		),
 	)
 
+	log.Info("Initializing HTTP server for metrics")
+	m := http.NewServeMux()
+	reg := prometheus.NewRegistry()
+	metrics.Init(reg)
+	promHandler := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
+	m.Handle("/metrics", promHandler)
+	metricsServer := httpserver.New(
+		m,
+		httpserver.Port(cfg.Prometheus.Port),
+	)
+
 	log.Info("Initializing HTTP server")
 	log.Info("Initializing handlers & routes")
 
@@ -75,6 +91,7 @@ func Run(cfg *config.Config) {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middlewares.MetricsMiddleware)
 	r.Mount("/api/v1", httpv1.New(service).Routes())
 
 	log.Info("Starting http server...")
@@ -97,16 +114,25 @@ func Run(cfg *config.Config) {
 		log.Error("Application HTTP server: ", err)
 	case err := <-grpcServer.Notify():
 		log.Error("Application gRPC server: ", err)
+	case err := <-metricsServer.Notify():
+		log.Error("Application Metrics server: ", err)
 	}
 
 	log.Info("Shutting down...")
 	wg := sync.WaitGroup{}
-	wg.Add(2)
+	wg.Add(3)
 
 	go func() {
 		defer wg.Done()
 		if err := httpServer.Shutdown(); err != nil {
 			log.Error("Application HTTP shutdown: ", err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if err := metricsServer.Shutdown(); err != nil {
+			log.Error("Application Metrics server: ", err)
 		}
 	}()
 

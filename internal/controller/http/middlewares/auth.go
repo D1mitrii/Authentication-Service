@@ -18,7 +18,7 @@ type AuthMiddleware struct {
 	service *services.Services
 }
 
-func New(services *services.Services) *AuthMiddleware {
+func NewAuthMiddleware(services *services.Services) *AuthMiddleware {
 	return &AuthMiddleware{
 		service: services,
 	}

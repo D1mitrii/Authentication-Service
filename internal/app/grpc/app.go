@@ -9,6 +9,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 
+	"auth/internal/controller/grpc/interceptors"
 	grpcv1 "auth/internal/controller/grpc/v1"
 	desc "auth/pkg/auth/v1"
 
@@ -42,6 +43,7 @@ func New(log *slog.Logger, port int, authService *grpcv1.Auth) *App {
 		grpc.ChainUnaryInterceptor(
 			recovery.UnaryServerInterceptor(recoveryOpts...),
 			logging.UnaryServerInterceptor(InterceptorLogger(log), logOpts...),
+			interceptors.MetricsInterceptor,
 		),
 	)
 	desc.RegisterAuthV1Server(s, authService)

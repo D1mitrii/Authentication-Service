@@ -9,13 +9,14 @@ import (
 )
 
 type Config struct {
-	Env    string     `yaml:"env" env:"ENV" env-required:"true"`
-	JWT    JWT        `yaml:"jwt"`
-	PG     Postgres   `yaml:"storage"`
-	RDB    Redis      `yaml:"redis"`
-	HTTP   HTTPServer `yaml:"http"`
-	GRPC   GRPC       `yaml:"grpc"`
-	Hasher Hasher     `yaml:"hasher"`
+	Env        string     `yaml:"env" env:"ENV" env-required:"true"`
+	JWT        JWT        `yaml:"jwt"`
+	PG         Postgres   `yaml:"storage"`
+	RDB        Redis      `yaml:"redis"`
+	HTTP       HTTPServer `yaml:"http"`
+	GRPC       GRPC       `yaml:"grpc"`
+	Prometheus Prometheus `yaml:"prometheus"`
+	Hasher     Hasher     `yaml:"hasher"`
 }
 
 type HTTPServer struct {
@@ -25,6 +26,10 @@ type HTTPServer struct {
 
 type GRPC struct {
 	Port int `yaml:"port" env:"GRPC_PORT" env-required:"true"`
+}
+
+type Prometheus struct {
+	Port int `yaml:"port" env:"PROMETHEUS_HTTP_PORT" env-required:"true"`
 }
 
 type Postgres struct {
