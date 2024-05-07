@@ -3,6 +3,7 @@ package v1
 import (
 	"auth/internal/controller/http/middlewares"
 	"auth/internal/services"
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -20,17 +21,14 @@ func New(s *services.Services) *Handler {
 
 func (h *Handler) Routes() chi.Router {
 	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.AllowContentType("application/json"))
-	r.Use(middleware.Heartbeat("/health"))
 
+	r.Use(middleware.AllowContentType("application/json"))
+
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {})
 	r.Post("/signup", h.signUp)
 	r.Post("/login", h.logIn)
 
-	auth := middlewares.New(h.service)
+	auth := middlewares.NewAuthMiddleware(h.service)
 
 	r.Group(func(r chi.Router) {
 		r.Use(auth.RefreshTokenCookie)
