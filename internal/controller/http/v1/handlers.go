@@ -62,6 +62,7 @@ func (h *Handler) logIn(w http.ResponseWriter, r *http.Request) {
 		Name:     middlewares.RefreshCookie,
 		Value:    jwt.Refresh,
 		Path:     "/",
+		MaxAge:   int(h.service.JWT.RefreshTTL().Seconds()),
 		HttpOnly: true,
 	})
 

@@ -7,11 +7,13 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"time"
 )
 
 type JWT interface {
 	NewAccessToken(models.User) (string, error)
 	NewRefreshToken() (string, error)
+	RefreshTTL() time.Duration
 	Parse(string) (int, error)
 }
 

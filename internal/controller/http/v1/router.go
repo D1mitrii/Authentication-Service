@@ -28,7 +28,7 @@ func (h *Handler) Routes() chi.Router {
 	r.Post("/signup", h.signUp)
 	r.Post("/login", h.logIn)
 
-	auth := middlewares.NewAuthMiddleware(h.service)
+	auth := middlewares.NewAuthMiddleware(h.service.JWT)
 
 	r.Group(func(r chi.Router) {
 		r.Use(auth.RefreshTokenCookie)

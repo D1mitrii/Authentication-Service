@@ -32,6 +32,10 @@ func New(
 	}
 }
 
+func (r *JWT) RefreshTTL() time.Duration {
+	return r.refresh_ttl
+}
+
 func (r *JWT) NewAccessToken(user models.User) (string, error) {
 	claims := &TokenClaims{
 		user.Id,

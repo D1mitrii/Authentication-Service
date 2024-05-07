@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"auth/internal/services"
 	"context"
 	"net/http"
 	"strings"
@@ -14,13 +13,17 @@ const (
 	RefreshCookie string = "refresh-token"
 )
 
-type AuthMiddleware struct {
-	service *services.Services
+type JWT interface {
+	Parse(token string) (int, error)
 }
 
-func NewAuthMiddleware(services *services.Services) *AuthMiddleware {
+type AuthMiddleware struct {
+	jwt JWT
+}
+
+func NewAuthMiddleware(jwt JWT) *AuthMiddleware {
 	return &AuthMiddleware{
-		service: services,
+		jwt: jwt,
 	}
 }
 
@@ -31,7 +34,7 @@ func (m *AuthMiddleware) JWT(next http.Handler) http.Handler {
 			http.Error(w, "incorrect authorization header", http.StatusUnauthorized)
 			return
 		}
-		id, err := m.service.JWT.Parse(token)
+		id, err := m.jwt.Parse(token)
 		if err != nil {
 			http.Error(w, "incorrect access token", http.StatusForbidden)
 			return
