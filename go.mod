@@ -1,4 +1,4 @@
-module auth
+module github.com/d1mitrii/authentication-service
 
 go 1.22.0
 

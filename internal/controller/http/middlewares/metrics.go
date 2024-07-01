@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"auth/internal/metrics"
+	"github.com/d1mitrii/authentication-service/internal/metrics"
 	"net/http"
 	"time"
 )

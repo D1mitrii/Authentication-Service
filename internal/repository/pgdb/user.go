@@ -1,12 +1,12 @@
 package pgdb
 
 import (
-	"auth/internal/models"
-	"auth/internal/repository/repoerrors"
-	"auth/pkg/postgres"
 	"context"
 	"errors"
 	"fmt"
+	"github.com/d1mitrii/authentication-service/internal/models"
+	"github.com/d1mitrii/authentication-service/internal/repository/repoerrors"
+	"github.com/d1mitrii/authentication-service/pkg/postgres"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"

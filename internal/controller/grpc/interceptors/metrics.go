@@ -1,8 +1,8 @@
 package interceptors
 
 import (
-	"auth/internal/metrics"
 	"context"
+	"github.com/d1mitrii/authentication-service/internal/metrics"
 	"time"
 
 	"google.golang.org/grpc"

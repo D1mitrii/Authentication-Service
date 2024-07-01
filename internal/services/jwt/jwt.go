@@ -1,9 +1,9 @@
 package jwt
 
 import (
-	"auth/internal/models"
 	"crypto/rand"
 	"fmt"
+	"github.com/d1mitrii/authentication-service/internal/models"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"

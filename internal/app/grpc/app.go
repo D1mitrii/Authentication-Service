@@ -9,9 +9,9 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
 
-	"auth/internal/controller/grpc/interceptors"
-	grpcv1 "auth/internal/controller/grpc/v1"
-	desc "auth/pkg/auth/v1"
+	"github.com/d1mitrii/authentication-service/internal/controller/grpc/interceptors"
+	grpcv1 "github.com/d1mitrii/authentication-service/internal/controller/grpc/v1"
+	desc "github.com/d1mitrii/authentication-service/pkg/auth/v1"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

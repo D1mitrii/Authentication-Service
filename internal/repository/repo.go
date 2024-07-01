@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"auth/internal/models"
 	"context"
+	"github.com/d1mitrii/authentication-service/internal/models"
 )
 
 type UserRepo interface {

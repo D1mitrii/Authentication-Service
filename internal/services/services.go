@@ -1,11 +1,11 @@
 package services
 
 import (
-	"auth/internal/models"
-	"auth/internal/repository"
-	"auth/internal/repository/repoerrors"
 	"context"
 	"errors"
+	"github.com/d1mitrii/authentication-service/internal/models"
+	"github.com/d1mitrii/authentication-service/internal/repository"
+	"github.com/d1mitrii/authentication-service/internal/repository/repoerrors"
 	"log/slog"
 	"time"
 )

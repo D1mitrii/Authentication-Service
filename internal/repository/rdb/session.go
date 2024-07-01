@@ -1,9 +1,9 @@
 package rdb
 
 import (
-	"auth/internal/repository/repoerrors"
 	"context"
 	"fmt"
+	"github.com/d1mitrii/authentication-service/internal/repository/repoerrors"
 	"time"
 
 	"github.com/redis/go-redis/v9"

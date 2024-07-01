@@ -1,8 +1,8 @@
 package converter
 
 import (
-	"auth/internal/models"
-	desc "auth/pkg/auth/v1"
+	"github.com/d1mitrii/authentication-service/internal/models"
+	desc "github.com/d1mitrii/authentication-service/pkg/auth/v1"
 )
 
 // Convert api login request to user model for service layer

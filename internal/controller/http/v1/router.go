@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"auth/internal/controller/http/middlewares"
-	"auth/internal/services"
+	"github.com/d1mitrii/authentication-service/internal/controller/http/middlewares"
+	"github.com/d1mitrii/authentication-service/internal/services"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"

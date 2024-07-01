@@ -1,11 +1,11 @@
 package v1
 
 import (
-	"auth/internal/converter"
-	"auth/internal/models"
-	"auth/internal/services"
-	desc "auth/pkg/auth/v1"
 	"context"
+	"github.com/d1mitrii/authentication-service/internal/converter"
+	"github.com/d1mitrii/authentication-service/internal/models"
+	"github.com/d1mitrii/authentication-service/internal/services"
+	desc "github.com/d1mitrii/authentication-service/pkg/auth/v1"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

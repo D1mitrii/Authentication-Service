@@ -1,12 +1,12 @@
 package v1
 
 import (
-	"auth/internal/controller/http/middlewares"
-	"auth/internal/models"
-	"auth/internal/repository/repoerrors"
-	"auth/internal/services"
 	"encoding/json"
 	"fmt"
+	"github.com/d1mitrii/authentication-service/internal/controller/http/middlewares"
+	"github.com/d1mitrii/authentication-service/internal/models"
+	"github.com/d1mitrii/authentication-service/internal/repository/repoerrors"
+	"github.com/d1mitrii/authentication-service/internal/services"
 	"net/http"
 )
 
