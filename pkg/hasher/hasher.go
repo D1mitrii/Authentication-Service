@@ -12,7 +12,7 @@ func New(salt int) *Hasher {
 	}
 }
 
-// Generate hash from password using bcrypt
+// Hash generate hash from password using bcrypt
 func (h *Hasher) Hash(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), h.salt)
 	return string(hash), err

@@ -46,7 +46,6 @@ func Run(cfg *config.Config) {
 	defer pg.Close()
 
 	log.Info("Connecting to redis")
-	log.Info("redis password: " + cfg.RDB.Password)
 	client := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", cfg.RDB.Host, cfg.RDB.Port),
 		Password: cfg.RDB.Password,
