@@ -3,6 +3,13 @@ package app
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+
 	"github.com/d1mitrii/authentication-service/internal/config"
 	grpcv1 "github.com/d1mitrii/authentication-service/internal/controller/grpc/v1"
 	"github.com/d1mitrii/authentication-service/internal/controller/http/middlewares"
@@ -17,12 +24,6 @@ import (
 	"github.com/d1mitrii/authentication-service/pkg/httpserver"
 	"github.com/d1mitrii/authentication-service/pkg/logger"
 	"github.com/d1mitrii/authentication-service/pkg/postgres"
-	"log/slog"
-	"net/http"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 
 	"github.com/d1mitrii/authentication-service/internal/app/grpc"
 
@@ -110,11 +111,11 @@ func Run(cfg *config.Config) {
 	case sig := <-quit:
 		log.Info("Application catch:", slog.String("signal", sig.String()))
 	case err := <-httpServer.Notify():
-		log.Error("Application HTTP server: ", err)
+		log.Error("Application HTTP server: ", slog.Any("err", err.Error()))
 	case err := <-grpcServer.Notify():
-		log.Error("Application gRPC server: ", err)
+		log.Error("Application gRPC server: ", slog.Any("err", err.Error()))
 	case err := <-metricsServer.Notify():
-		log.Error("Application Metrics server: ", err)
+		log.Error("Application Metrics server: ", slog.Any("err", err.Error()))
 	}
 
 	log.Info("Shutting down...")
@@ -124,14 +125,14 @@ func Run(cfg *config.Config) {
 	go func() {
 		defer wg.Done()
 		if err := httpServer.Shutdown(); err != nil {
-			log.Error("Application HTTP shutdown: ", err)
+			log.Error("Application HTTP shutdown: ", slog.Any("err", err.Error()))
 		}
 	}()
 
 	go func() {
 		defer wg.Done()
 		if err := metricsServer.Shutdown(); err != nil {
-			log.Error("Application Metrics server: ", err)
+			log.Error("Application Metrics server: ", slog.Any("err", err.Error()))
 		}
 	}()
 
